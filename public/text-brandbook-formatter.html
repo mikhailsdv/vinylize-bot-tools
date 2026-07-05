@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Форматтер текста по брендбуку</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #f5f6fa;
+			color: #171717;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			line-height: 1.5;
+		}
+
+		main {
+			width: 100%;
+			max-width: 640px;
+			padding: 24px;
+		}
+
+		.card {
+			width: 100%;
+			padding: 28px 20px;
+			border-radius: 24px;
+			background: #ffffff;
+			box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+		}
+
+		h1 {
+			margin: 0 0 24px;
+			font-size: 28px;
+			line-height: 1.15;
+			text-align: center;
+		}
+
+		form,
+		.actions,
+		.field {
+			display: flex;
+			flex-direction: column;
+		}
+
+		form,
+		.actions {
+			gap: 18px;
+		}
+
+		label,
+		.legend {
+			margin-bottom: 6px;
+			font-weight: 700;
+		}
+
+		textarea {
+			width: 100%;
+			min-height: 320px;
+			padding: 14px 16px;
+			border: 1px solid #d7dbe5;
+			border-radius: 14px;
+			color: #171717;
+			font: inherit;
+			resize: vertical;
+			outline: none;
+			transition: border-color 0.2s, box-shadow 0.2s;
+		}
+
+		textarea:focus {
+			border-color: #5f65ff;
+			box-shadow: 0 0 0 4px rgba(95, 101, 255, 0.12);
+		}
+
+		textarea:read-only {
+			background: #f8fafc;
+		}
+
+		.validation-errors {
+			margin: 10px 0 0;
+			padding-left: 20px;
+			color: #dc2626;
+			font-size: 14px;
+			font-weight: 600;
+		}
+
+		.platform {
+			margin: 0;
+			padding: 0;
+			border: 0;
+		}
+
+		.platform-options {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 10px;
+		}
+
+		.platform-option {
+			margin: 0;
+			padding: 12px 14px;
+			border: 1px solid #d7dbe5;
+			border-radius: 14px;
+			font-weight: 700;
+			cursor: pointer;
+		}
+
+		.platform-option:has(input:checked) {
+			border-color: #5f65ff;
+			box-shadow: 0 0 0 4px rgba(95, 101, 255, 0.12);
+		}
+
+		.platform-option input {
+			margin: 0 8px 0 0;
+		}
+
+		button {
+			width: 100%;
+			padding: 14px 18px;
+			border: 0;
+			border-radius: 14px;
+			background: #171717;
+			color: #ffffff;
+			font: inherit;
+			font-weight: 700;
+			cursor: pointer;
+			transition: opacity 0.2s, transform 0.2s;
+		}
+
+		button:not(:disabled):active {
+			transform: translateY(1px);
+		}
+
+		button:disabled {
+			cursor: not-allowed;
+			opacity: 0.45;
+		}
+
+		.secondary {
+			background: #edf0f7;
+			color: #171717;
+		}
+
+		.success {
+			background: #16a34a;
+		}
+
+		.hidden {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<section class="card">
+			<h1>Форматтер текста по брендбуку</h1>
+
+			<form id="formatter-form">
+				<div class="field">
+					<label for="text">Текст</label>
+					<textarea id="text" placeholder="Вставьте текст для форматирования"></textarea>
+					<ul id="validation-errors" class="validation-errors hidden"></ul>
+				</div>
+
+				<fieldset id="platform" class="platform">
+					<div class="legend">Площадка</div>
+					<div class="platform-options">
+						<label class="platform-option">
+							<input type="radio" name="platform" value="telegram" checked>
+							Telegram
+						</label>
+						<label class="platform-option">
+							<input type="radio" name="platform" value="instagram">
+							Instagram
+						</label>
+					</div>
+				</fieldset>
+
+				<div class="actions">
+					<button id="format-text" type="submit" disabled>Форматировать</button>
+					<button id="restart" class="secondary hidden" type="button">Начать заново</button>
+				</div>
+			</form>
+		</section>
+	</main>
+
+	<script>
+		const invisibleSpace = "⠀"
+		const nonBreakingSpace = "\u00A0"
+		const nonBreakingHyphen = "\u2011"
+		const enDash = "–"
+		const emojiPattern = "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?(?:\\u200D\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?)*"
+		const consecutiveEmojiRegex = new RegExp(`${emojiPattern}\\s*${emojiPattern}`, "u")
+		const emojiWithPeriodRegex = new RegExp(`(${emojiPattern})\\.\\s*`, "gu")
+		const textBeforeEmojiRegex = new RegExp(`([^\\s])\\s*(${emojiPattern})`, "gu")
+		const emojiBeforeTextRegex = new RegExp(`(${emojiPattern})\\s*([^\\s])`, "gu")
+		const shortWords = "а|в|во|и|к|ко|с|со|у|о|об|от|до|на|по|за|из|но|не|ни|же|ли|бы|для|над|под|при|без|про|как|что"
+		const shortWordAfterSpaceRegex = new RegExp(`(^|\\s)(${shortWords})\\s+`, "giu")
+		const shortWordBeforeEndRegex = new RegExp(`\\s+([а-яa-z]{1,2})([.!?…]?)(?=\\s*$)`, "giu")
+		const yoExceptions = new Set(["её", "Её", "ЕЁ", "всё", "Всё", "ВСЁ"])
+
+		const form = document.querySelector("#formatter-form")
+		const textInput = document.querySelector("#text")
+		const validationErrors = document.querySelector("#validation-errors")
+		const platform = document.querySelector("#platform")
+		const formatButton = document.querySelector("#format-text")
+		const restartButton = document.querySelector("#restart")
+
+		let isFormatted = false
+
+		const normalizeYo = (text) => text.replace(/[а-яА-ЯёЁ]+/g, (word) => {
+			if (yoExceptions.has(word)) {
+				return word
+			}
+
+			return word.replace(/ё/g, "е").replace(/Ё/g, "Е")
+		})
+
+		const normalizeRegularSpaces = (text) => text.replace(/[ \t]{2,}/g, " ")
+
+		const normalizeQuotes = (text) => {
+			let isOpeningQuote = true
+
+			return text.replace(/["“”„«»]/g, () => {
+				const quote = isOpeningQuote ? "«" : "»"
+
+				isOpeningQuote = !isOpeningQuote
+
+				return quote
+			})
+		}
+
+		const normalizeDashes = (text) => text
+			.replace(/--/g, ` ${enDash} `)
+			.replace(/[ \t]+[-—][ \t]+/g, ` ${enDash} `)
+			.replace(/—/g, enDash)
+			.replace(/([\p{L}\p{N}])-([\p{L}\p{N}])/gu, `$1${nonBreakingHyphen}$2`)
+
+		const normalizePunctuationSpaces = (text) => text.replace(/([.,!?;:…])(\S)/g, (match, punctuation, nextCharacter, offset, fullText) => {
+			if (punctuation === "." && /\d/.test(fullText[offset - 1] || "") && /\d/.test(nextCharacter)) {
+				return match
+			}
+
+			return `${punctuation} ${nextCharacter}`
+		})
+
+		const normalizeEmoji = (text) => text
+			.replace(emojiWithPeriodRegex, (match, emoji) => `${emoji} `)
+			.replace(textBeforeEmojiRegex, (match, textPart, emoji) => `${textPart}${nonBreakingSpace}${emoji}`)
+			.replace(emojiBeforeTextRegex, (match, emoji, textPart) => `${emoji} ${textPart}`)
+
+		const normalizeShortWords = (text) => text
+			.replace(shortWordAfterSpaceRegex, `$1$2${nonBreakingSpace}`)
+			.replace(shortWordBeforeEndRegex, `${nonBreakingSpace}$1$2`)
+
+		const trimFinalPeriod = (line) => line.replace(/\.(\s*)$/, "$1")
+
+		const formatLine = (line) => {
+			const trimmedLine = line.trim()
+			const formattedLine = normalizeShortWords(normalizeRegularSpaces(normalizeEmoji(normalizePunctuationSpaces(normalizeDashes(normalizeQuotes(normalizeYo(normalizeRegularSpaces(trimmedLine))))))))
+
+			return trimFinalPeriod(formattedLine).trim()
+		}
+
+		const formatText = (text, platform) => {
+			const formattedText = text
+				.replace(/\r\n?/g, "\n")
+				.split("\n")
+				.map(formatLine)
+				.join("\n")
+				.replace(/\n\n+/g, "\n\n")
+
+			if (platform !== "instagram") {
+				return formattedText
+			}
+
+			return formattedText.replace(/\n\n/g, `\n${invisibleSpace}\n`)
+		}
+
+		const getPlatform = () => document.querySelector("input[name='platform']:checked").value
+
+		const validateText = (text) => {
+			const errors = []
+
+			if (consecutiveEmojiRegex.test(text)) {
+				errors.push("В тексте есть несколько идущих подряд смайликов. Оставьте только один")
+			}
+
+			return errors
+		}
+
+		const showValidationErrors = (errors) => {
+			validationErrors.replaceChildren()
+
+			errors.forEach((error) => {
+				const item = document.createElement("li")
+
+				item.textContent = error
+				validationErrors.append(item)
+			})
+
+			validationErrors.classList.remove("hidden")
+		}
+
+		const hideValidationErrors = () => {
+			validationErrors.replaceChildren()
+			validationErrors.classList.add("hidden")
+		}
+
+		const updateFormState = () => {
+			formatButton.disabled = !textInput.value.trim()
+		}
+
+		form.addEventListener("submit", async (event) => {
+			event.preventDefault()
+
+			if (!isFormatted) {
+				const errors = validateText(textInput.value)
+
+				if (errors.length) {
+					showValidationErrors(errors)
+					return
+				}
+
+				hideValidationErrors()
+				textInput.value = formatText(textInput.value, getPlatform())
+				textInput.readOnly = true
+				formatButton.textContent = "Скопировать"
+				formatButton.classList.add("success")
+				platform.classList.add("hidden")
+				restartButton.classList.remove("hidden")
+				isFormatted = true
+				updateFormState()
+				return
+			}
+
+			await navigator.clipboard.writeText(textInput.value)
+			formatButton.textContent = "Скопировано"
+		})
+
+		restartButton.addEventListener("click", () => {
+			form.reset()
+			textInput.value = ""
+			textInput.readOnly = false
+			formatButton.textContent = "Форматировать"
+			formatButton.classList.remove("success")
+			platform.classList.remove("hidden")
+			restartButton.classList.add("hidden")
+			hideValidationErrors()
+			isFormatted = false
+			updateFormState()
+			textInput.focus()
+		})
+
+		textInput.addEventListener("input", () => {
+			hideValidationErrors()
+			updateFormState()
+		})
+
+		updateFormState()
+	</script>
+</body>
+</html>

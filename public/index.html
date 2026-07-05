@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Генератор UTM ссылок на Винилизатор</title>
+	<title>Инструменты для Винилизатора</title>
 	<style>
 		* {
 			box-sizing: border-box;
@@ -23,7 +23,7 @@
 
 		main {
 			width: 100%;
-			max-width: 430px;
+			max-width: 520px;
 			padding: 24px;
 		}
 
@@ -36,263 +36,84 @@
 		}
 
 		h1 {
-			margin: 0 0 24px;
+			margin: 0 0 12px;
 			font-size: 28px;
 			line-height: 1.15;
 			text-align: center;
 		}
 
-		form,
-		.result,
-		.field {
+		.description {
+			margin: 0 0 24px;
+			color: #6b7280;
+			text-align: center;
+		}
+
+		.tools {
 			display: flex;
 			flex-direction: column;
+			gap: 12px;
+			margin: 0;
+			padding: 0;
+			list-style: none;
 		}
 
-		form,
-		.result {
-			gap: 18px;
-		}
-
-		label {
-			margin-bottom: 6px;
-			font-weight: 700;
-		}
-
-		input {
-			width: 100%;
-			padding: 14px 16px;
+		a {
+			display: block;
+			padding: 16px;
 			border: 1px solid #d7dbe5;
-			border-radius: 14px;
+			border-radius: 16px;
 			color: #171717;
-			font: inherit;
-			outline: none;
-			transition: border-color 0.2s, box-shadow 0.2s;
+			text-decoration: none;
+			transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 		}
 
-		input:focus {
+		a:focus,
+		a:hover {
 			border-color: #5f65ff;
 			box-shadow: 0 0 0 4px rgba(95, 101, 255, 0.12);
+			outline: none;
 		}
 
-		.hint {
-			margin: 6px 0 0;
-			color: #6b7280;
-			font-size: 14px;
-		}
-
-		.error {
-			display: none;
-			margin: 0;
-			color: #dc2626;
-			font-size: 14px;
-			font-weight: 600;
-		}
-
-		button {
-			width: 100%;
-			padding: 14px 18px;
-			border: 0;
-			border-radius: 14px;
-			background: #171717;
-			color: #ffffff;
-			font: inherit;
-			font-weight: 700;
-			cursor: pointer;
-			transition: opacity 0.2s, transform 0.2s;
-		}
-
-		button:not(:disabled):active {
+		a:active {
 			transform: translateY(1px);
 		}
 
-		button:disabled {
-			cursor: not-allowed;
-			opacity: 0.45;
+		.tool-title {
+			display: block;
+			margin-bottom: 4px;
+			font-weight: 700;
 		}
 
-		.secondary {
-			background: #edf0f7;
-			color: #171717;
-		}
-
-		.hidden {
-			display: none;
+		.tool-description {
+			display: block;
+			color: #6b7280;
+			font-size: 14px;
 		}
 	</style>
 </head>
 <body>
 	<main>
 		<section class="card">
-			<h1>Генератор UTM ссылок на Винилизатор</h1>
+			<h1>Инструменты для Винилизатора</h1>
+			<p class="description">Полезные инструменты для работы с @VinylizeBot в Telegram.</p>
 
-			<form id="utm-form">
-				<div class="field">
-					<label for="utm-source">utm_source *</label>
-					<input id="utm-source" name="utm_source" type="text" placeholder="telegram-ads" autocomplete="off" required>
-					<p class="hint">Источник трафика. Примеры: telegram, instagram, partner-site.</p>
-					<p class="error input-error">Используйте дефис вместо нижнего подчеркивания</p>
-				</div>
-
-				<div class="field">
-					<label for="utm-medium">utm_medium *</label>
-					<input id="utm-medium" name="utm_medium" type="text" placeholder="cpc" autocomplete="off" required>
-					<p class="hint">Тип трафика или формат размещения. Примеры: cpc, post, newsletter, banner.</p>
-					<p class="error input-error">Используйте дефис вместо нижнего подчеркивания</p>
-				</div>
-
-				<div class="field">
-					<label for="utm-campaign">utm_campaign *</label>
-					<input id="utm-campaign" name="utm_campaign" type="text" placeholder="summer-launch" autocomplete="off" required>
-					<p class="hint">Название кампании, акции или теста. Примеры: summer-launch, black-friday, test-a.</p>
-					<p class="error input-error">Используйте дефис вместо нижнего подчеркивания</p>
-				</div>
-
-				<p id="length-error" class="error">Превышен суммарный размер начального параметра. Сократите длину параметров</p>
-				<button id="create-link" type="submit" disabled>Создать ссылку</button>
-			</form>
-
-			<div id="result" class="result hidden">
-				<div class="field">
-					<label for="generated-link">Готовая ссылка</label>
-					<input id="generated-link" type="text" readonly>
-				</div>
-
-				<button id="copy-link" type="button">Скопировать в буфер обмена</button>
-				<button id="new-link" class="secondary" type="button">Новая ссылка</button>
-			</div>
+			<nav aria-label="Список инструментов">
+				<ul class="tools">
+					<li>
+						<a href="utm-link-generator.html">
+							<span class="tool-title">Генератор UTM ссылок</span>
+							<span class="tool-description">Создать ссылку на бота с utm_source, utm_medium и utm_campaign.</span>
+						</a>
+					</li>
+					<li>
+						<a href="text-brandbook-formatter.html">
+							<span class="tool-title">Форматтер текста по брендбуку</span>
+							<span class="tool-description">Привести текст к правилам оформления для Telegram и Instagram.</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
 		</section>
 	</main>
-
-	<script>
-		const botUrl = "https://t.me/VinylizeBot?start="
-		const maxStartPayloadLength = 64
-
-		const form = document.querySelector("#utm-form")
-		const result = document.querySelector("#result")
-		const inputs = Array.from(document.querySelectorAll("#utm-source, #utm-medium, #utm-campaign"))
-		const sourceInput = inputs[0]
-		const mediumInput = inputs[1]
-		const campaignInput = inputs[2]
-		const createButton = document.querySelector("#create-link")
-		const lengthError = document.querySelector("#length-error")
-		const generatedLinkInput = document.querySelector("#generated-link")
-		const copyButton = document.querySelector("#copy-link")
-		const newLinkButton = document.querySelector("#new-link")
-		const allowedPattern = /^[a-z0-9-]+$/
-
-		const getValue = (input) => input.value.trim()
-		const buildStartPayload = () => `s_${getValue(sourceInput)}_m_${getValue(mediumInput)}_c_${getValue(campaignInput)}`
-		const buildLink = () => `${botUrl}${buildStartPayload()}`
-		const hasUnderscoreError = () => inputs.some((input) => input.parentElement.querySelector(".input-error").style.display === "block")
-		const showUnderscoreError = (input) => {
-			input.parentElement.querySelector(".input-error").style.display = "block"
-		}
-		const hideUnderscoreError = (input) => {
-			input.parentElement.querySelector(".input-error").style.display = "none"
-		}
-		const insertValue = (input, value) => {
-			const start = input.selectionStart
-			const end = input.selectionEnd
-
-			input.setRangeText(value, start, end, "end")
-		}
-
-		const updateFormState = () => {
-			const hasAllValues = getValue(sourceInput) && getValue(mediumInput) && getValue(campaignInput)
-			const isTooLong = buildStartPayload().length > maxStartPayloadLength
-
-			createButton.disabled = !hasAllValues || isTooLong || hasUnderscoreError()
-			lengthError.style.display = isTooLong ? "block" : "none"
-		}
-
-		inputs.forEach((input) => {
-			input.addEventListener("beforeinput", (event) => {
-				if (event.inputType !== "insertText") {
-					return
-				}
-
-				event.preventDefault()
-
-				const inputValue = event.data || ""
-
-				if (inputValue.includes("_")) {
-					showUnderscoreError(input)
-					updateFormState()
-					return
-				}
-
-				const value = inputValue.toLowerCase()
-
-				if (!allowedPattern.test(value)) {
-					return
-				}
-
-				hideUnderscoreError(input)
-				insertValue(input, value)
-				updateFormState()
-			})
-
-			input.addEventListener("paste", (event) => {
-				event.preventDefault()
-
-				const value = event.clipboardData.getData("text")
-				const normalizedValue = value.toLowerCase()
-				const safeValue = normalizedValue.replace(/[^a-z0-9-]/g, "")
-
-				if (normalizedValue.includes("_")) {
-					showUnderscoreError(input)
-				} else {
-					hideUnderscoreError(input)
-				}
-
-				insertValue(input, safeValue)
-				updateFormState()
-			})
-
-			input.addEventListener("input", () => {
-				const value = input.value.toLowerCase()
-
-				if (value.includes("_")) {
-					showUnderscoreError(input)
-				} else {
-					hideUnderscoreError(input)
-				}
-
-				input.value = value.replace(/[^a-z0-9-]/g, "")
-				updateFormState()
-			})
-		})
-
-		form.addEventListener("submit", (event) => {
-			event.preventDefault()
-
-			if (createButton.disabled) {
-				return
-			}
-
-			generatedLinkInput.value = buildLink()
-			form.classList.add("hidden")
-			result.classList.remove("hidden")
-		})
-
-		copyButton.addEventListener("click", async () => {
-			await navigator.clipboard.writeText(generatedLinkInput.value)
-			copyButton.textContent = "Скопировано"
-		})
-
-		newLinkButton.addEventListener("click", () => {
-			form.reset()
-			inputs.forEach(hideUnderscoreError)
-			generatedLinkInput.value = ""
-			copyButton.textContent = "Скопировать в буфер обмена"
-			result.classList.add("hidden")
-			form.classList.remove("hidden")
-			updateFormState()
-			sourceInput.focus()
-		})
-
-		updateFormState()
-	</script>
 </body>
 </html>
