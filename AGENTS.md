@@ -28,7 +28,7 @@ The Telegram start payload length limit is treated as 64 characters.
 
 `public/text-brandbook-formatter.html` formats pasted text in-place and then switches to a read-only copy mode. It supports Telegram and Instagram modes; Instagram mode separates paragraphs with the invisible space character `⠀`.
 
-The text formatter applies the current brandbook rules: trim each line, collapse repeated spaces and extra blank lines, remove final periods from paragraphs and bullet items, use non-breaking spaces before emoji and around short function words where appropriate, use a regular space after emoji when text follows, reject two or more consecutive emoji even with spaces between them during validation, remove periods after emoji, add missing spaces after punctuation, use non-breaking hyphens inside compounds, normalize long dashes to `–`, avoid `ё` except preserved cases like `её` and `всё`, and convert quotes to `«елочки»`.
+The text formatter applies the current brandbook rules: trim each line, collapse repeated spaces and extra blank lines, remove final periods from paragraphs and bullet items, use non-breaking spaces before emoji and around short function words where appropriate, use a regular space after emoji when text follows, keep emoji skin tone modifiers attached to the base emoji, reject two or more consecutive emoji even with spaces between them during validation, remove periods after emoji, add missing spaces after punctuation, use non-breaking hyphens inside compounds, normalize long dashes to `–`, avoid `ё` except preserved cases like `её` and `всё`, and convert quotes to `«елочки»`.
 
 ## Project Shape
 

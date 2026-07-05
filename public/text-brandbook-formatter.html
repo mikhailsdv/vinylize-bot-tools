@@ -195,11 +195,14 @@
 		const nonBreakingSpace = "\u00A0"
 		const nonBreakingHyphen = "\u2011"
 		const enDash = "–"
-		const emojiPattern = "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?(?:\\u200D\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?)*"
+		const emojiPartPattern = "\\p{Extended_Pictographic}(?:\\uFE0F|\\uFE0E)?(?:[\\u{1F3FB}-\\u{1F3FF}])?"
+		const emojiPattern = `${emojiPartPattern}(?:\\u200D${emojiPartPattern})*`
 		const consecutiveEmojiRegex = new RegExp(`${emojiPattern}\\s*${emojiPattern}`, "u")
 		const emojiWithPeriodRegex = new RegExp(`(${emojiPattern})\\.\\s*`, "gu")
 		const textBeforeEmojiRegex = new RegExp(`([^\\s])\\s*(${emojiPattern})`, "gu")
 		const emojiBeforeTextRegex = new RegExp(`(${emojiPattern})\\s*([^\\s])`, "gu")
+		const skinToneModifierRegex = /[\u{1F3FB}-\u{1F3FF}]/u
+		const skinToneBeforeTextRegex = /([\u{1F3FB}-\u{1F3FF}])\s*([^\s])/gu
 		const shortWords = "а|в|во|и|к|ко|с|со|у|о|об|от|до|на|по|за|из|но|не|ни|же|ли|бы|для|над|под|при|без|про|как|что"
 		const shortWordAfterSpaceRegex = new RegExp(`(^|\\s)(${shortWords})\\s+`, "giu")
 		const shortWordBeforeEndRegex = new RegExp(`\\s+([а-яa-z]{1,2})([.!?…]?)(?=\\s*$)`, "giu")
@@ -253,7 +256,14 @@
 		const normalizeEmoji = (text) => text
 			.replace(emojiWithPeriodRegex, (match, emoji) => `${emoji} `)
 			.replace(textBeforeEmojiRegex, (match, textPart, emoji) => `${textPart}${nonBreakingSpace}${emoji}`)
-			.replace(emojiBeforeTextRegex, (match, emoji, textPart) => `${emoji} ${textPart}`)
+			.replace(emojiBeforeTextRegex, (match, emoji, textPart) => {
+				if (skinToneModifierRegex.test(textPart)) {
+					return match
+				}
+
+				return `${emoji} ${textPart}`
+			})
+			.replace(skinToneBeforeTextRegex, `$1 $2`)
 
 		const normalizeShortWords = (text) => text
 			.replace(shortWordAfterSpaceRegex, `$1$2${nonBreakingSpace}`)
